@@ -7,6 +7,7 @@ library(magrittr)
 datapath <- "data/test_data.csv"
 coordspath <- "data/coords_list.csv"
 questionspath <- "data/question_names.txt"
+outputpath <- "data/test_data_cleaned.csv"
 
 #Set parameters
 unneededcols <- expr(c(StartDate:Finished, LastName:Language))
@@ -98,8 +99,8 @@ data %<>%
          rank_5 = `5`) %>% 
   relocate(rank_1:rank_5, .after = reasons)
 
-#remove old ranking columns
-data %<>% select(-(!!rankcols))
+#remove old ranking columns and reasons list
+data %<>% select(-(!!rankcols), -reasons)
 
 
 
@@ -122,3 +123,5 @@ data %<>%
   relocate(longitude, latitude, .after = city)
 
 data
+
+data %>% write_csv(outputpath)
