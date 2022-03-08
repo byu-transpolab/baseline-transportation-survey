@@ -1,20 +1,28 @@
 library(tidyverse)
 library(magrittr)
 
+################################################################################
+
 #Set paths
 datapath <- "data/test_data.csv"
 coordspath <- "data/coords_list.csv"
+questionspath <- "data/question_names.txt"
 
 #Set parameters
+unneededcols <- expr(c(StartDate:Finished, LastName:Language))
 othercols <- c("mode", "complex", "city", "hs_modes", "gender", "parent_education")
-zoneorder <- c(5, 12, 6, 7, 9, 8, 10, 11, 4, 2)
+zoneorder <- c(5, 12, 6, 7, 9, 8, 10, 11, 4, 2) #order of zones in activity cols
+firstactcols <- expr(first_activity_5:first_activity_2)
+lastactcols <- expr(last_activity_5:last_activity_2)
+rankcols <- expr(rank_parking:rank_na)
 
+################################################################################
 
 #read in data and exclude unnecessary columns
 data <- read_csv(datapath) %>% 
-  `colnames<-`(read_lines("data/question_names.txt")) %>% 
+  `colnames<-`(read_lines(questionspath)) %>% 
   {.[-(1:2),]} %>% #remove the first two rows due to their unhelpfulness
-  select(-c(StartDate:Finished, LastName:Language)) %>% 
+  select(-(!!unneededcols)) %>% 
   relocate(ID)
 
 
@@ -25,13 +33,8 @@ data %<>% filter(!(is.na(mode) & is.na(mode_other)))
 #copy "other" text to main columns
 textcols <- which(colnames(data) %in% othercols)
 
-for(i in textcols){
-  col1 <- i
-  col2 <- i+1
-  for(j in 1:nrow(data)){
-    data[j,col1] <- ifelse(is.na(data[j,col1]), data[j,col2], data[j,col1])
-  }
-}
+#collapse "other" columns
+for(i in textcols) data %<>% replace(i, coalesce(data[[i]], data[[i+1]]))
 
 #remove "other" columns
 data %<>% select(-(textcols+1))
@@ -39,11 +42,11 @@ data %<>% select(-(textcols+1))
 
 #reformat campus zone data
 firstact_all <- data %>% 
-  select(first_activity_5:first_activity_2) %>% 
+  select(!!firstactcols) %>% 
   mutate(across(.fns = ~ replace(., . == "Like", "On")))
 
 lastact_all <- data %>% 
-  select(last_activity_5:last_activity_2) %>% 
+  select(!!lastactcols) %>% 
   mutate(across(.fns = ~ replace(., . == "Like", "On")))
 
 zoneorder <- zoneorder
@@ -68,13 +71,13 @@ lastact <- get_locations(lastact_all)
 data %<>% 
   mutate(first_activity = firstact,
          last_activity = lastact) %>% 
-  select(-(first_activity_5:last_activity_2)) %>%
+  select(-c(!!firstactcols, !!lastactcols)) %>%
   relocate(first_activity, last_activity, .before = school_year)
 
 
 #reformat rankings for reasons
 rankings <- data %>% 
-  select(ID, rank_parking:rank_na)
+  select(ID, !!rankcols)
 
 rankings %<>% 
   pivot_longer(-ID) %>% 
@@ -96,9 +99,26 @@ data %<>%
   relocate(rank_1:rank_5, .after = reasons)
 
 #remove old ranking columns
-data %<>% select(-(rank_parking:rank_na))
+data %<>% select(-(!!rankcols))
 
 
 
 #create coordinates of living location
 coordslist <- read_csv(coordspath)
+
+#determine coords from pixels
+coord_longitude <- as.numeric(data$coord_x) + 3
+coord_latitude <- as.numeric(data$coord_y) + 3
+
+#join lats/longs based on above and predetermined values (coordslist)
+data %<>% 
+  mutate(longitude = coord_longitude, latitude = coord_latitude) %>% 
+  left_join(coordslist, by = c("complex" = "location")) %>% 
+  left_join(coordslist, by = c("city" = "location")) %>% 
+  #coalesce all columns
+  mutate(longitude = coalesce(longitude, longitude.x, longitude.y),
+         latitude = coalesce(latitude, latitude.x, latitude.y)) %>% 
+  select(-c(coord_x:coord_y, longitude.x:latitude.y)) %>% 
+  relocate(longitude, latitude, .after = city)
+
+data
