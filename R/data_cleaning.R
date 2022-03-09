@@ -108,8 +108,8 @@ data %<>% select(-(!!rankcols), -reasons)
 coordslist <- read_csv(coordspath)
 
 #determine coords from pixels
-coord_longitude <- as.numeric(data$coord_x) + 3
-coord_latitude <- as.numeric(data$coord_y) + 3
+coord_longitude <- as.numeric(data$coord_x) + 3 ##this is where the conversion
+coord_latitude <- as.numeric(data$coord_y) + 3  ##formulas go
 
 #join lats/longs based on above and predetermined values (coordslist)
 data %<>% 
