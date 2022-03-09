@@ -5,6 +5,7 @@ library(magrittr)
 
 #Set paths
 datapath <- "data/test_data.csv"
+<<<<<<< HEAD
 coordspath <- "data/coords_list.csv"
 questionspath <- "data/question_names.txt"
 outputpath <- "data/test_data_cleaned.csv"
@@ -16,20 +17,30 @@ zoneorder <- c(5, 12, 6, 7, 9, 8, 10, 11, 4, 2) #order of zones in activity cols
 firstactcols <- expr(first_activity_5:first_activity_2)
 lastactcols <- expr(last_activity_5:last_activity_2)
 rankcols <- expr(rank_parking:rank_na)
+=======
+
+>>>>>>> parent of f779737 (update data cleaning script)
 
 ################################################################################
 
 #read in data and exclude unnecessary columns
 data <- read_csv(datapath) %>% 
+<<<<<<< HEAD
   `colnames<-`(read_lines(questionspath)) %>% 
   {.[-(1:2),]} %>% #remove the first two rows due to their unhelpfulness
   select(-(!!unneededcols)) %>% 
   relocate(ID)
 
+=======
+  `colnames<-`(read_lines("data/question_names.txt")) %>% 
+  {.[-(1:2),]} %>% 
+  select(-c(StartDate:Finished, ID:Language))
+>>>>>>> parent of f779737 (update data cleaning script)
 
 #remove responses without a mode
 data %<>% filter(!(is.na(mode) & is.na(mode_other)))
 
+<<<<<<< HEAD
 
 #copy "other" text to main columns
 textcols <- which(colnames(data) %in% othercols)
@@ -108,8 +119,8 @@ data %<>% select(-(!!rankcols), -reasons)
 coordslist <- read_csv(coordspath)
 
 #determine coords from pixels
-coord_longitude <- as.numeric(data$coord_x) + 3 ##this is where the conversion
-coord_latitude <- as.numeric(data$coord_y) + 3  ##formulas go
+coord_longitude <- 111.7083078-(as.numeric(data$coord_x)*0.0000241039393939354) ##this is where the conversion
+coord_latitude <- 40.2824881-(as.numeric(data$coord_y)*0.0000184697272727293)  ##formulas go
 
 #join lats/longs based on above and predetermined values (coordslist)
 data %<>% 
@@ -125,3 +136,6 @@ data %<>%
 data
 
 data %>% write_csv(outputpath)
+=======
+#
+>>>>>>> parent of f779737 (update data cleaning script)
