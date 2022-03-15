@@ -5,8 +5,8 @@ library(magrittr)
 
 #Set paths
 datapath <- "data/test_data.csv"
-coordspath <- "data/coords_list.csv"
-questionspath <- "data/question_names.txt"
+coordspath <- "reference/coords_list.csv"
+questionspath <- "reference/question_names.txt"
 outputpath <- "output/test_data_cleaned.csv"
 
 #Set parameters
