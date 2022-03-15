@@ -1,0 +1,60 @@
+---
+title: "Sampling Plan"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+header-includes:
+  - \usepackage{graphicx}
+  - \graphicspath{ {../images/} }
+
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+```
+
+```{r set_variables}
+conf = 0.95
+error = 1
+sd = 10.2
+response_rate = .2
+
+cce = 916
+sustainability = 600
+gen1 = 0
+
+num_responses <- function(s, z, e){
+  s^2*z^2/e^2
+}
+```
+
+The central purpose of this analysis is to determine the mean trip length to campus for the university
+community. We desire enough samples to estimate the mean trip length within `r error` miles at `r paste0(conf*100, "%")` confidence.
+
+Trip length frequency distributions are not distributed normally, but we can simplify this analysis by asserting a normal distribution for the number of necessary samples,
+
+\begin{equation*}
+  N = \frac{\sigma^2z^2}{\epsilon^2},
+\end{equation*}
+
+where \(\sigma\) is the standard deviation, \(z\) is the z score of the desired confidence level---which is `r (z = qnorm((1-conf)/2) %>% abs() %>% round(2))` for `r paste0(conf*100, "%")` confidence on a two-sided test---and \(\epsilon\) is the desired margin of error.
+
+The standard deviation of trip lengths is a difficult parameter to estimate for a new population, particularly given the geographic and land use constraints that enter the equation. Though we have no local data to base this estimate on, we obtained information on university trips from the Reno, Nevada travel demand model (home of the University of Nevada, Reno). The distribution of these trips is presented in Figure \ref{fig:reno}. The weighted standard deviation of these trips is `r sd` miles.
+
+Given the desired accuracy and confidence alongside the transferred standard deviation from Reno, the analysis requires `r (n = num_responses(sd, z, error) %>% ceiling())` survey responses in each group. Using an assumed response rate of `r paste0(response_rate*100, "%")`, we plan distribute the survey to `r (tot = (n/response_rate) %>% ceiling())` graduate and undergraduate students.
+
+We have obtained permission to distribute the survey in the Civil and Construction Engineering department email, which goes out to `r cce` students, and the BYU sustainability email, which goes out to about `r sustainability` students. We can also potentially distribute the survey in the BYU First-Generation Student email, which goes out to `r gen1` students.
+
+With these emails we are able to send the survey to `r (email = cce + sustainability + gen1)` students. This is less than our required number, and so we also plan to take a convenience sample of students on campus. We plan to set up a booth in the student center for a week, and ideally we will be able to obtain the remaining `r ((tot-email)*response_rate) %>% ceiling()` required responses (assuming a response rate of `r paste0(response_rate*100, "%")` via the email newsletters). This convenience sample, though not perfect, will additionally help us weight our results, as the current email channels we plan to utilize for distribution are not particularly representative of campus.
+
+\begin{figure}
+  \includegraphics{reno.jpg}
+  \caption{\centering University trip length frequency distribution for Reno, NV.\newline Data from Reno/Washoe~County travel demand model.}
+  \label{fig:reno}
+\end{figure}
+
