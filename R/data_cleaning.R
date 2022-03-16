@@ -5,10 +5,9 @@ library(magrittr)
 
 #Set paths
 datapath <- "data/test_data.csv"
-<<<<<<< HEAD
-coordspath <- "data/coords_list.csv"
-questionspath <- "data/question_names.txt"
-outputpath <- "data/test_data_cleaned.csv"
+coordspath <- "reference/coords_list.csv"
+questionspath <- "reference/question_names.txt"
+outputpath <- "output/test_data_cleaned.csv"
 
 #Set parameters
 unneededcols <- expr(c(StartDate:Finished, LastName:Language))
