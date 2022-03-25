@@ -26,7 +26,7 @@ response_rate = .2
 
 cce = 916
 sustainability = 600
-gen1 = 0
+gen1 = 179
 
 num_responses <- function(s, z, e){
   s^2*z^2/e^2
@@ -48,9 +48,9 @@ The standard deviation of trip lengths is a difficult parameter to estimate for 
 
 Given the desired accuracy and confidence alongside the transferred standard deviation from Reno, the analysis requires `r (n = num_responses(sd, z, error) %>% ceiling())` survey responses in each group. Using an assumed response rate of `r paste0(response_rate*100, "%")`, we plan distribute the survey to `r (tot = (n/response_rate) %>% ceiling())` graduate and undergraduate students.
 
-We have obtained permission to distribute the survey in the Civil and Construction Engineering department email, which goes out to `r cce` students, and the BYU sustainability email, which goes out to about `r sustainability` students. We can also potentially distribute the survey in the BYU First-Generation Student email, which goes out to `r gen1` students.
+We have obtained permission to distribute the survey in the Civil and Construction Engineering department email, which goes out to `r cce` students, and the BYU sustainability email, which goes out to about `r sustainability` students. We can also potentially distribute the survey in the BYU First-Generation Student newsletter, which goes out to `r gen1` students.
 
-With these emails we are able to send the survey to `r (email = cce + sustainability + gen1)` students. This is less than our required number, and so we also plan to take a convenience sample of students on campus. We plan to set up a booth in the student center for a week, and ideally we will be able to obtain the remaining `r ((tot-email)*response_rate) %>% ceiling()` required responses (assuming a response rate of `r paste0(response_rate*100, "%")` via the email newsletters). This convenience sample, though not perfect, will additionally help us weight our results, as the current email channels we plan to utilize for distribution are not particularly representative of campus.
+With these emails we are able to send the survey to `r (email = cce + sustainability + gen1)` students. With the assumed response rate of `r paste0(response_rate*100, "%")`, we expect `r (email*response_rate) %>% ceiling()` responses. This is less than our required number, and so we also plan to take a convenience sample of students on campus. We plan to set up a booth in the student center for a week, and ideally we will be able to obtain the remaining `r ((tot-email)*response_rate) %>% ceiling()` required responses. This convenience sample, though not perfect, will additionally help us weight our results, as the current email channels we plan to utilize for distribution are not particularly representative of campus.
 
 \begin{figure}
   \includegraphics{reno.jpg}

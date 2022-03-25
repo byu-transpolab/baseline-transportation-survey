@@ -1,13 +1,7 @@
-library(tidyverse)
-library(magrittr)
+# library(tidyverse)
+# library(magrittr)
 
 ################################################################################
-
-#Set paths
-datapath <- "data/test_data.csv"
-coordspath <- "reference/coords_list.csv"
-questionspath <- "reference/question_names.txt"
-outputpath <- "output/test_data_cleaned.csv"
 
 #Set parameters
 unneededcols <- expr(c(StartDate:Finished, LastName:Language))
@@ -19,17 +13,39 @@ rankcols <- expr(rank_parking:rank_na)
 
 ################################################################################
 
-#read in data and exclude unnecessary columns
-data <- read_csv(datapath) %>% 
-  `colnames<-`(read_lines(questionspath)) %>% 
-  {.[-(1:2),]} %>% #remove the first two rows due to their unhelpfulness
-  select(-(!!unneededcols)) %>% 
-  relocate(ID)
-
+#' Get the data out of the qualtrics file and clean it.
+#' 
+#' @param datapath Path to qualtrics csv output
+#' @param questionspath Path to annotated question labels file
+get_data <- function(datapath, questionspath){
+  
+  #read in data and exclude unnecessary columns
+  data <- read_csv(datapath) %>% 
+    `colnames<-`(read_lines(questionspath)) %>% 
+    {.[-(1:2),]} %>% #remove the first two rows due to their unhelpfulness
+    select(-(!!unneededcols)) %>% 
+    relocate(ID)
+  
+  
+  #remove responses without a mode
+  data %<>% filter(!(is.na(mode) & is.na(mode_other)))
+  
+  
+  #copy "other" text to main columns
+  textcols <- which(colnames(data) %in% othercols)
+  
+  #collapse "other" columns
+  for(i in textcols) data %<>% replace(i, coalesce(data[[i]], data[[i+1]]))
+  
+  #remove "other" columns
+  data %<>% select(-(textcols+1))
+  
+  
+  data
+}
 
 #remove responses without a mode
 data %<>% filter(!(is.na(mode) & is.na(mode_other)))
-
 
 #copy "other" text to main columns
 textcols <- which(colnames(data) %in% othercols)
@@ -108,8 +124,8 @@ data %<>% select(-(!!rankcols), -reasons)
 coordslist <- read_csv(coordspath)
 
 #determine coords from pixels
-coord_longitude <- as.numeric(data$coord_x) + 3 ##this is where the conversion
-coord_latitude <- as.numeric(data$coord_y) + 3  ##formulas go
+coord_longitude <- 111.7083078-(as.numeric(data$coord_x)*0.0000241039393939354)
+coord_latitude <- 40.2824881-(as.numeric(data$coord_y)*0.0000184697272727293)
 
 #join lats/longs based on above and predetermined values (coordslist)
 data %<>% 
@@ -125,3 +141,4 @@ data %<>%
 data
 
 data %>% write_csv(outputpath)
+
