@@ -38,6 +38,14 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
+#bookdown stuff
+*.aux
+*.log
+*.spl
+_bookdown_files/
+_targets/
+
+
 #misc
 *nul
 R/*nul
