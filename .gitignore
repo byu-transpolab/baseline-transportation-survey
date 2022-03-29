@@ -49,5 +49,5 @@ _targets/
 #misc
 *nul
 R/*nul
-output
-data
+#output
+#data
