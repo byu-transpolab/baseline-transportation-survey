@@ -37,7 +37,9 @@
 #   book = book_targets
 # )
 
-library(targets)
+if(!require(pacman)) install.packages("pacman")
+pacman::p_load(targets, tarchetypes)
+
 # This is an example _targets.R file. Every
 # {targets} pipeline needs one.
 # Use tar_script() to create _targets.R and tar_edit()
@@ -48,29 +50,48 @@ library(targets)
 # Define custom functions and other global objects.
 # This is where you write source(\"R/functions.R\")
 # if you keep your functions in external scripts.
+source("R/finding_columns.R")
 source("R/data_cleaning.R")
 
 
 # Set target-specific options such as packages.
-tar_option_set(packages = c("tidyverse", "magrittr"))
+tar_option_set(packages = c("tidyverse", "magrittr", "bookdown"))
 
 # End this file with a list of target objects.
-list(
-  ### Set parameters ###
-  tar_target(datapath, "data/test_data_monday.csv", format = "file"),
-  tar_target(coordspath, "reference/coords_list.csv", format = "file"),
-  tar_target(questionspath, "reference/question_names.txt", format = "file"),
-  tar_target(unneededcols, expr(c(StartDate:Finished, LastName:Language))),
-  tar_target(othercols, c("mode", "complex", "city", "hs_modes", "gender", "parent_education")),
-  tar_target(zoneorder, c(5, 12, 6, 7, 9, 8, 10, 11, 4, 2)), #order of zones in activity cols
-  tar_target(firstactcols, expr(first_activity_5:first_activity_2)),
-  tar_target(lastactcols, expr(last_activity_5:last_activity_2)),
-  tar_target(rankcols, expr(rank_parking:rank_na)),
-  tar_target(outputpath, "data/test_data_monday_CLEANED.csv"),
+data_targets <- tar_plan(
+  #### Set paths ####
+  tar_target(data_path, "data/test_data_monday.csv", format = "file"),
+  tar_target(coords_path, "reference/coords_list.csv", format = "file"),
+  tar_target(questions_path, "reference/question_names.csv", format = "file"),
+  tar_target(unneeded_cols_path, "reference/unneeded_cols.txt", format = "file"),
+  tar_target(output_path, "data/test_data_monday_CLEANED.csv"),
   
-  ### Clean data ###
-  tar_target(data, clean_data(datapath, coordspath, questionspath, unneededcols,
-                              othercols, zoneorder, firstactcols, lastactcols,
-                              rankcols, outputpath))
+  #### Read data ####
+  data_raw = read_csv(data_path),
+  question_names = get_question_names(data_raw, questions_path),
+  unneeded_col_names = get_unneeded_cols(data_raw, unneeded_cols_path),
+  data = format_data(data_raw, question_names, unneeded_col_names),
+  coords_list = read_csv(coords_path),
+  
+  #### Find required information about columns ####
+  first_act_cols = find_first_act_cols(data),
+  last_act_cols = find_last_act_cols(data),
+  rank_cols = find_rank_cols(data),
+  other_cols = find_other_cols(data),
+  zone_order = find_zone_order(first_act_cols, last_act_cols),
+  
+  #### Clean data ####
+  data_filtered = collapse_filter_data(data, other_cols),
+  data_with_zones = format_zones(data_filtered, first_act_cols,
+                                 last_act_cols, zone_order),
+  data_with_ranks = format_rankings(data_with_zones, rank_cols)
+  
+  
+  
+  # tar_target(data_clean, clean_data(data, coordspath, questionspath, unneededcols,
+                              # othercols, zoneorder, firstactcols, lastactcols,
+                              # rankcols, outputpath))
   
 )
+
+tar_plan(data_targets)

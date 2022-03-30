@@ -1,95 +1,107 @@
-
-#' Get the data out of the qualtrics file and clean it.
+#' Reformat the qualtrics data
 #' 
-#' @param datapath Path to qualtrics csv output
-#' @param coordspath Path to coordinate reference file
-#' @param questionspath Path to annotated question labels file
-#' @param unneededcols Expression containing a vector of columns that are extraneous
-#' @param othercols Character vector of multiple choice questions that have an "other" text box
-#' @param zoneorder Numeric vector of the order of zones in the activity columns
-#' @param firstactcols Expression containing a vector of "first activity" column names
-#' @param lastactcols Expression containing a vector of "last activity" column names
-#' @param rankcols Expression containing a vector of column names for ranking reasons
-#' @param outputpath Path for writing cleaned data file
-clean_data <- function(datapath, coordspath, questionspath, unneededcols,
-                       othercols, zoneorder, firstactcols, lastactcols,
-                       rankcols, outputpath){
-  
-  #read in data and exclude unnecessary columns
-  data <- read_csv(datapath) %>% 
-    `colnames<-`(read_lines(questionspath)) %>% 
+#' @param data_raw Raw qualtrics data
+#' @param question_names Annotated question labels object
+#' @param unneeded_col_names Vector of column names that are extraneous
+format_data <- function(data_raw, question_names, unneeded_col_names){
+  data <- data_raw %>% 
+    rename_with(~ question_names$new_name, all_of(question_names$old_name)) %>% 
+    select(-all_of(unneeded_col_names)) %>% 
     {.[-(1:2),]} %>% #remove the first two rows due to their unhelpfulness
-    select(-(!!unneededcols)) %>% 
     relocate(ID)
   
+  data
+}
+
+
+#' Gets unneeded column names
+#' 
+#' @param data_raw Raw qualtrics data
+#' @param unneeded_cols_path Path to file listing extraneous columns
+get_unneeded_cols <- function(data_raw, unneeded_cols_path){
+  unneeded_cols <- read_lines(unneeded_cols_path)
+  unneeded_col_names <- unneeded_cols[unneeded_cols %in% colnames(data_raw)]
   
-  #remove responses without a mode
-  data %<>% filter(!(is.na(mode) & is.na(mode_other)))
+  unneeded_col_names
+}
+
+
+
+#' Gets question names for existing columns
+#' 
+#' @param data_raw Raw qualtrics data
+#' @param questions_path Path to annotated question labels file
+get_question_names <- function(data_raw, questions_path){
+  question_names <- read_csv(questions_path) %>% 
+    filter(old_name %in% colnames(data_raw))
   
+  question_names
+}
+
+
+#' Collapse "other" columns and filter data
+#' 
+#' @param data Data object
+#' @param other_cols Vector of "other" column names
+collapse_filter_data <- function(data, other_cols){
+  other_cols_index <- which(colnames(data) %in% other_cols)
+  data_filtered <- data
+  for(i in other_cols_index) data_filtered %<>% replace(i-1, coalesce(data[[i-1]], data[[i]]))
   
-  #copy "other" text to main columns
-  textcols <- which(colnames(data) %in% othercols)
+  data_filtered %<>% select(-all_of(other_cols)) %>% 
+    filter(!is.na(mode))
   
-  #collapse "other" columns
-  for(i in textcols) data %<>% replace(i, coalesce(data[[i]], data[[i+1]]))
-  
-  #remove "other" columns
-  data %<>% select(-(textcols+1))
-  
-  
-  #remove responses without a mode
-  data %<>% filter(!(is.na(mode) & is.na(mode_other)))
-  
-  #copy "other" text to main columns
-  textcols <- which(colnames(data) %in% othercols)
-  
-  #collapse "other" columns
-  for(i in textcols) data %<>% replace(i, coalesce(data[[i]], data[[i+1]]))
-  
-  #remove "other" columns
-  data %<>% select(-(textcols+1))
-  
-  
-  #reformat campus zone data
-  firstact_all <- data %>% 
-    select(!!firstactcols) %>% 
+  data_filtered
+}
+
+
+#' Reformat campus zone data
+#' 
+#' @param data Data object
+#' @param first_act_cols Vector of columns pertaining to first activities
+#' @param last_act_cols Vector of columns pertaining to last activities
+#' @param zone_order Vector listing activity zone order
+format_zones <- function(data, first_act_cols, last_act_cols, zone_order){
+  #some results say "Like" instead of "On"
+  first_act <- data %>% 
+    select(all_of(first_act_cols)) %>% 
+    mutate(across(.fns = ~ replace(., . == "Like", "On")))
+  last_act <- data %>% 
+    select(all_of(last_act_cols)) %>% 
     mutate(across(.fns = ~ replace(., . == "Like", "On")))
   
-  lastact_all <- data %>% 
-    select(!!lastactcols) %>% 
-    mutate(across(.fns = ~ replace(., . == "Like", "On")))
+  #find which zones are "On" (only the first in each row)
+  first_act_zones <- apply(first_act == "On",
+                           1,
+                           function(x) min(which(x))) %>% 
+    {ifelse(. != Inf, zone_order[.], NA)} #map index to zone via zone_order
   
-  zoneorder <- zoneorder
+  last_act_zones <- apply(last_act == "On",
+                           1,
+                           function(x) min(which(x))) %>% 
+    {ifelse(. != Inf, zone_order[.], NA)} #map starting after the first activity zone order
   
-  get_locations <- function(df){
-    #find which columns are "On"
-    cols <- which(df == "On", arr.ind = T) %>%
-      as_tibble() %>%
-      arrange(row) %>% 
-      select(col) %>% 
-      unlist() %>% 
-      unname()
-    
-    #use the column index to get the zone
-    zoneorder[cols]
-  }
-  
-  firstact <- get_locations(firstact_all)
-  lastact <- get_locations(lastact_all)
   
   #add new activity cols and remove old ones
-  data %<>% 
-    mutate(first_activity = firstact,
-           last_activity = lastact) %>% 
-    select(-c(!!firstactcols, !!lastactcols)) %>%
+  data_with_zones <- data %>% 
+    mutate(first_activity = first_act_zones,
+           last_activity = last_act_zones) %>% 
+    select(-all_of(first_act_cols), -all_of(last_act_cols)) %>%
     relocate(first_activity, last_activity, .before = school_year)
   
-  
-  #reformat rankings for reasons
+  data_with_zones
+}
+
+
+#' Reformat rankings for reasons
+#' 
+#' @param data Data object
+#' @param rank_cols_index Vector of "rank" column names
+format_rankings <- function(data, rank_cols){
   rankings <- data %>% 
-    select(ID, !!rankcols)
+    select(ID, all_of(rank_cols))
   
-  rankings %<>% 
+  rankings_t <- rankings %>% 
     pivot_longer(-ID) %>% 
     filter(!is.na(value)) %>% 
     arrange(ID,value) %>% 
@@ -99,40 +111,48 @@ clean_data <- function(datapath, coordspath, questionspath, unneededcols,
     mutate(across(-ID, ~ str_to_title(.)))
   
   #re-add rankings to table
-  data %<>%
-    left_join(rankings, by = "ID") %>% 
+  data_with_ranks <- data %>% 
+    left_join(rankings_t, by = "ID") %>% 
     rename(rank_1 = `1`,
            rank_2 = `2`,
            rank_3 = `3`,
            rank_4 = `4`,
            rank_5 = `5`) %>% 
-    relocate(rank_1:rank_5, .after = reasons)
+    relocate(rank_1:rank_5, .after = reasons) %>%
+    #remove old ranking columns and reasons list
+    select(-c(all_of(rank_cols), reasons))
   
-  #remove old ranking columns and reasons list
-  data %<>% select(-(!!rankcols), -reasons)
-  
-  
-  
-  #create coordinates of living location
-  coordslist <- read_csv(coordspath)
-  
-  #determine coords from pixels
+  data_with_ranks
+}
+
+
+#' Create coordinates for living location
+#' 
+#' 
+create_coords <- function(data, coords_list){
+  #empirical conversion formulas
   coord_longitude <- 111.7083078-(as.numeric(data$coord_x)*0.0000241039393939354)
   coord_latitude <- 40.2824881-(as.numeric(data$coord_y)*0.0000184697272727293)
-  
-  #join lats/longs based on above and predetermined values (coordslist)
-  data %<>% 
-    mutate(longitude = coord_longitude, latitude = coord_latitude) %>% 
-    left_join(coordslist, by = c("complex" = "location")) %>% 
-    left_join(coordslist, by = c("city" = "location")) %>% 
-    #coalesce all columns
-    mutate(longitude = coalesce(longitude, longitude.x, longitude.y),
-           latitude = coalesce(latitude, latitude.x, latitude.y)) %>% 
-    select(-c(coord_x:coord_y, longitude.x:latitude.y)) %>% 
-    relocate(longitude, latitude, .after = city)
-  
-  
-  data %>% write_csv(outputpath)
-  
-  data
 }
+
+
+
+
+
+
+
+
+  # 
+  # #join lats/longs based on above and predetermined values (coordslist)
+  # data %<>% 
+  #   mutate(longitude = coord_longitude, latitude = coord_latitude) %>% 
+  #   left_join(coordslist, by = c("complex" = "location")) %>% 
+  #   left_join(coordslist, by = c("city" = "location")) %>% 
+  #   #coalesce all columns
+  #   mutate(longitude = coalesce(longitude, longitude.x, longitude.y),
+  #          latitude = coalesce(latitude, latitude.x, latitude.y)) %>% 
+  #   select(-c(coord_x:coord_y, longitude.x:latitude.y)) %>% 
+  #   relocate(longitude, latitude, .after = city)
+  # 
+  # 
+  # data %>% write_csv(outputpath)

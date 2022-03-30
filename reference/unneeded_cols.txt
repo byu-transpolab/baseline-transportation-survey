@@ -1,0 +1,15 @@
+StartDate
+EndDate
+ResponseType
+IP
+Progress
+Duration
+Finished
+LastName
+FirstName
+Email
+ExternalReference
+Latitude
+Longitude
+DistributionChannel
+Language
