@@ -56,6 +56,10 @@ create_times_graph <- function(data_clean, out_path){
     scale_x_time(labels = function(x) str_replace(x, "([0-9]+:[0-9]+):[0-9]+", "\\1")) +
     scale_color_manual(labels = c("Arrival Time", "Departure Time"), values = c("red", "blue")) +
     scale_fill_manual(labels = c("Arrival Time", "Departure Time"), values = c("red", "blue")) +
+    theme(legend.position = "bottom",
+          legend.key.size = unit(1.5, "cm"),
+          legend.text = element_text(size = 24),
+          axis.text.x = element_text(size = 24)) +
     labs(x = element_blank(),
          fill = element_blank(),
          color = element_blank())
@@ -63,7 +67,7 @@ create_times_graph <- function(data_clean, out_path){
   ggsave(out_path, times_graph,
          width = 50, height = 30,
          units = "cm",
-         bg = "white")
+         bg = NULL)
   
   times_graph
 }
