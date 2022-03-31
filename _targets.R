@@ -17,7 +17,11 @@ source("R/poster_visualizations.R")
 
 
 # Set target-specific options such as packages.
-tar_option_set(packages = c("tidyverse", "magrittr", "lubridate", "bookdown"))
+tar_option_set(packages = c("tidyverse",
+                            "magrittr",
+                            "lubridate",
+                            "wesanderson",
+                            "bookdown"))
 
 #### Targets for cleaning data ####
 clean_data_targets <- tar_plan(
