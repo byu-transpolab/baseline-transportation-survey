@@ -60,11 +60,11 @@ tar_option_set(packages = c("tidyverse", "magrittr", "bookdown"))
 # End this file with a list of target objects.
 clean_data_targets <- tar_plan(
   #### Set paths ####
-  tar_target(data_path, "data/test_data_monday.csv", format = "file"),
+  tar_target(data_path, "data/poster_data.csv", format = "file"),
   tar_target(coords_path, "reference/coords_list.csv", format = "file"),
   tar_target(questions_path, "reference/question_names.csv", format = "file"),
   tar_target(unneeded_cols_path, "reference/unneeded_cols.txt", format = "file"),
-  tar_target(output_path, "data/test_data_monday_CLEANED.csv"),
+  tar_target(output_path, "data/poster_data_CLEANED.csv"),
   
   #### Read data ####
   data_raw = read_csv(data_path),
