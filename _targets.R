@@ -58,7 +58,7 @@ source("R/data_cleaning.R")
 tar_option_set(packages = c("tidyverse", "magrittr", "bookdown"))
 
 # End this file with a list of target objects.
-data_targets <- tar_plan(
+clean_data_targets <- tar_plan(
   #### Set paths ####
   tar_target(data_path, "data/test_data_monday.csv", format = "file"),
   tar_target(coords_path, "reference/coords_list.csv", format = "file"),
@@ -68,7 +68,7 @@ data_targets <- tar_plan(
   
   #### Read data ####
   data_raw = read_csv(data_path),
-  question_names = get_question_names(data_raw, questions_path),
+  question_names = get_question_names(data_raw, questions_path, unneeded_col_names),
   unneeded_col_names = get_unneeded_cols(data_raw, unneeded_cols_path),
   data = format_data(data_raw, question_names, unneeded_col_names),
   coords_list = read_csv(coords_path),
@@ -84,14 +84,12 @@ data_targets <- tar_plan(
   data_filtered = collapse_filter_data(data, other_cols),
   data_with_zones = format_zones(data_filtered, first_act_cols,
                                  last_act_cols, zone_order),
-  data_with_ranks = format_rankings(data_with_zones, rank_cols)
+  data_with_ranks = format_rankings(data_with_zones, rank_cols),
+  data_with_coords = format_coords(data_with_ranks, coords_list),
   
-  
-  
-  # tar_target(data_clean, clean_data(data, coordspath, questionspath, unneededcols,
-                              # othercols, zoneorder, firstactcols, lastactcols,
-                              # rankcols, outputpath))
+  #### Write cleaned data ####
+  data_clean = write_clean_data(data_with_coords, output_path)
   
 )
 
-tar_plan(data_targets)
+tar_plan(clean_data_targets)

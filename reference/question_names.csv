@@ -61,7 +61,7 @@ last_activity_2,Q10_10
 housing,Q11
 complex,Q12
 complex_other,Q12_6_TEXT
-housing_type,Q_13
+housing_type,Q13
 city,Q14
 city_other,Q14_3_TEXT
 coord_x,Q15_1_x
