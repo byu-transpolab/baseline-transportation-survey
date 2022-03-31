@@ -13,6 +13,7 @@ pacman::p_load(targets, tarchetypes)
 # if you keep your functions in external scripts.
 source("R/finding_columns.R")
 source("R/data_cleaning.R")
+source("R/poster_visualizations.R")
 
 
 # Set target-specific options such as packages.
@@ -55,7 +56,8 @@ clean_data_targets <- tar_plan(
 
 #### Targets for visualizing the data ####
 viz_data_targets <- tar_plan(
-  
+  mode_choice_graph = create_mode_choice_graph(data_clean, "plots/mode_choice_graph.png"),
+  times_graph = create_times_graph(data_clean, "plots/times_graph.png")
 )
 
 # #### Targets for building the book / article ####
