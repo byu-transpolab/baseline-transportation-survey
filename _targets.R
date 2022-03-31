@@ -17,7 +17,7 @@ source("R/poster_visualizations.R")
 
 
 # Set target-specific options such as packages.
-tar_option_set(packages = c("tidyverse", "magrittr", "bookdown"))
+tar_option_set(packages = c("tidyverse", "magrittr", "lubridate", "bookdown"))
 
 #### Targets for cleaning data ####
 clean_data_targets <- tar_plan(
@@ -48,9 +48,10 @@ clean_data_targets <- tar_plan(
                                  last_act_cols, zone_order),
   data_with_ranks = format_rankings(data_with_zones, rank_cols),
   data_with_coords = format_coords(data_with_ranks, coords_list),
+  data_with_times = format_times(data_with_coords),
   
   #### Write cleaned data ####
-  data_clean = write_clean_data(data_with_coords, output_path)
+  data_clean = write_clean_data(data_with_times, output_path)
   
 )
 

@@ -30,18 +30,28 @@ create_mode_choice_graph <- function(data_clean, out_path){
 
 #' Create graph of arrival and departure times
 #'
-#'@param data_clean The data to be plotted
+#' @param data_clean The data to be plotted
 #' @param out_path Path to save image
 create_times_graph <- function(data_clean, out_path){
-  data_clean$time_arrive %<>%
-    as.character() %>% 
-    parse_time("%H:%M")
-  data_clean$time_leave %<>%
-    as.character() %>% 
-    parse_time("%H:%M")
+  times_graph <- data_clean %>% 
+    mutate(time_arrive = as.numeric(time_arrive),
+           time_leave = as.numeric(time_leave)) %>%
+    pivot_longer(c(time_arrive, time_leave), names_to = "time_type", values_to = "time") %>% 
+    ggplot() +
+    geom_dotplot(aes(x = time, fill = time_type, color = time_type),
+                 stackdir = "center",
+                 dotsize = 0.2,
+                 position = position_jitter()) +
+    theme_minimal() +
+    scale_y_continuous(NULL, breaks = NULL) +
+    scale_x_time() +
+    scale_color_manual(labels = c("Arrival Time", "Departure Time"), values = c("red", "blue")) +
+    scale_fill_manual(labels = c("Arrival Time", "Departure Time"), values = c("red", "blue")) +
+    labs(x = element_blank(),
+         fill = element_blank(),
+         color = element_blank())
+    
+  ggsave(out_path, times_graph)
   
-  # data_clean %>% 
-  #   ggplot() +
-  #   geom
-
+  times_graph
 }

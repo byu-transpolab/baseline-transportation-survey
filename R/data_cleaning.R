@@ -152,6 +152,26 @@ format_coords <- function(data, coords_list){
 }
 
 
+#' Reformat times
+#' 
+#' @param data Data object
+format_times <- function(data){
+  data_times <- data %>% 
+    mutate(time_arrive = hm(time_arrive),
+           time_leave = hm(time_leave)) %>% 
+    mutate(time_arrive = 
+             case_when(
+               hour(time_arrive) >= 18 ~ time_arrive - hours(12),
+               TRUE ~ time_arrive),
+           time_leave = 
+             case_when(
+               hour(time_leave) <= 8 ~ time_leave + hours(12),
+               TRUE ~ time_leave))
+  
+  data_times
+}
+
+
 #' Write cleaned data (and return it)
 #' 
 #' @param data_clean Cleaned data
