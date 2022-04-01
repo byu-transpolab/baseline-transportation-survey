@@ -29,7 +29,8 @@ output_file <- "data/poster_data_CLEANED.csv"
 
 output_plots_dir <- "plots"
 
-BYUcoords <- c(40.250318845549025, -111.64921975843211)
+BYUcoords <- c(longitude = 40.250318845549025,
+               latitude = -111.64921975843211)
 
 
 #### Targets for cleaning data ####
