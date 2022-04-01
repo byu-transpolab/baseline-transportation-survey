@@ -1,8 +1,11 @@
 tidyverse
 magrittr
+sf
 lubridate
 ggeasy
 ragg
 wesanderson
 bookdown
 gmapsdistance
+mapsapi
+units

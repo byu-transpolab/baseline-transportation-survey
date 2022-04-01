@@ -1,0 +1,85 @@
+#' Reformat the qualtrics data
+#' 
+#' @param data_raw Raw qualtrics data
+#' @param question_names Annotated question labels object
+#' @param unneeded_col_names Vector of column names that are extraneous
+format_data <- function(data_raw, question_names, unneeded_col_names){
+  data <- data_raw %>% 
+    select(-all_of(unneeded_col_names)) %>% 
+    rename_with(~ question_names$new_name, all_of(question_names$old_name)) %>% 
+    {.[-(1:2),]} %>% #remove the first two rows due to their unhelpfulness
+    relocate(ID)
+  
+  data
+}
+
+
+#' Gets unneeded column names
+#' 
+#' @param data_raw Raw qualtrics data
+#' @param unneeded_cols_path Path to file listing extraneous columns
+get_unneeded_cols <- function(data_raw, unneeded_cols_path){
+  unneeded_cols <- read_lines(unneeded_cols_path)
+  unneeded_col_names <- unneeded_cols[unneeded_cols %in% colnames(data_raw)]
+  
+  unneeded_col_names
+}
+
+
+
+#' Gets question names for existing columns
+#' 
+#' @param data_raw Raw qualtrics data
+#' @param questions_path Path to annotated question labels file
+#' @param unneeded_col_names Vector of column names that are extraneous
+get_question_names <- function(data_raw, questions_path, unneeded_col_names){
+  question_names <- read_csv(questions_path) %>% 
+    filter(old_name %in% colnames(data_raw),
+           !old_name %in% unneeded_col_names)
+  
+  question_names
+}
+
+
+#' Gets bad columns to be removed at the end
+#'
+#' @param data The data to compare column names against
+#' @param bad_columns_list A list of column names to remove
+get_bad_cols <- function(data, bad_columns_list){
+  bad_column_names <- bad_columns_list %>%
+    unlist() %>% 
+    unname()
+  bad_column_names %<>% {.[bad_column_names %in% colnames(data)]}
+  
+  bad_column_names
+}
+
+
+#' Combine data
+#' 
+#' @param data The original data
+#' @param tables_list A list of table objects containing the data to join
+#' @param bad_column_names A character vector of column names to remove
+combine_data <- function(data, tables_list, bad_column_names = NULL){
+  #remove old (bad) columns
+  data_full <- data %>% 
+    select(-all_of(bad_column_names))
+  
+  #join new tables
+  for(i in tables_list){
+    data_full <- 
+      left_join(data_full, i, by = "ID")
+  }
+  
+  data_full
+}
+
+
+#' Write data (and return it)
+#' 
+#' @param data Data to write
+#' @param output_path Output path to write file
+write_data <- function(data, output_path){
+  write_csv(data, output_path)
+  data
+}
