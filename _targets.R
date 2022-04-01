@@ -19,7 +19,9 @@ unneeded_cols_file <- "reference/unneeded_cols.txt"
 
 
 # Info for outputs
-output_file <- str_replace(data_file, "\\.csv", "_CLEANED\\.csv")
+output_file <- str_replace(data_file,
+                           "data/(.+)\\.csv",
+                           "output/data/\\1_CLEANED\\.csv")
 output_plots_dir <- "output/plots"
 
 # Misc info
