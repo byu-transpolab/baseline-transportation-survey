@@ -1,5 +1,5 @@
 if(!require(pacman)) install.packages("pacman")
-pacman::p_load(targets, tarchetypes)
+pacman::p_load(targets, tarchetypes, tidyverse)
 
 # This is an example _targets.R file. Every
 # {targets} pipeline needs one.
@@ -13,24 +13,33 @@ pacman::p_load(targets, tarchetypes)
 # if you keep your functions in external scripts.
 source("R/finding_columns.R")
 source("R/data_cleaning.R")
-source("R/poster_visualizations.R")
+source("R/data_visualizations.R")
 
 
 # Set target-specific options such as packages.
-tar_option_set(packages = c("tidyverse",
-                            "magrittr",
-                            "lubridate",
-                            "wesanderson",
-                            "bookdown"))
+package_list <- read_lines("package_list.txt")
+tar_option_set(packages = package_list)
+
+# Set file paths
+data_file <- "data/poster_data.csv"
+coords_file <- "reference/coords_list.csv"
+questions_file <- "reference/question_names.csv"
+unneeded_cols_file <- "reference/unneeded_cols.txt"
+output_file <- "data/poster_data_CLEANED.csv"
+
+output_plots_dir <- "plots"
+
+BYUcoords <- c(40.250318845549025, -111.64921975843211)
+
 
 #### Targets for cleaning data ####
 clean_data_targets <- tar_plan(
   #### Set paths ####
-  tar_target(data_path, "data/poster_data.csv", format = "file"),
-  tar_target(coords_path, "reference/coords_list.csv", format = "file"),
-  tar_target(questions_path, "reference/question_names.csv", format = "file"),
-  tar_target(unneeded_cols_path, "reference/unneeded_cols.txt", format = "file"),
-  tar_target(output_path, "data/poster_data_CLEANED.csv"),
+  tar_target(data_path, data_file, format = "file"),
+  tar_target(coords_path, coords_file, format = "file"),
+  tar_target(questions_path, questions_file, format = "file"),
+  tar_target(unneeded_cols_path, unneeded_cols_file, format = "file"),
+  tar_target(output_path, output_file),
   
   #### Read data ####
   data_raw = read_csv(data_path),
@@ -61,8 +70,12 @@ clean_data_targets <- tar_plan(
 
 #### Targets for visualizing the data ####
 viz_data_targets <- tar_plan(
-  mode_choice_graph = create_mode_choice_graph(data_clean, "plots/mode_choice_graph.png"),
-  times_graph = create_times_graph(data_clean, "plots/times_graph.png")
+  mode_choice_graph =create_mode_choice_graph(
+    data_clean, paste0(output_plots_dir,"/mode_choice.png")),
+  times_graph = create_times_graph(
+    data_clean, paste0(output_plots_dir,"/arr_dept_times.png")),
+  distance_by_mode = create_dist_mode_graph(
+    data_clean, paste0(output_plots_dir,"/distance_by_mode.png"))
 )
 
 # #### Targets for building the book / article ####
