@@ -1,12 +1,12 @@
 #' Create mode choice bar graph
 #' 
-#' @param data_clean The data to be graphed
+#' @param data The data to be graphed
 #' @param out_path Path to save image
-create_mode_choice_graph <- function(data_clean, out_path){
-  mode_choice_graph <- data_clean %>% 
+create_mode_choice_graph <- function(data, out_path){
+  mode_choice_graph <- data %>% 
     mutate(across(.fns = ~ str_replace(.x," \\(.+\\):?", ""))) %>%
     count(mode) %>% 
-    mutate(pct = n / nrow(data_clean)
+    mutate(pct = n / nrow(data)
     ) %>% 
     ggplot(mapping = aes(x = reorder(mode, -n),
                          y = pct,
@@ -33,10 +33,12 @@ create_mode_choice_graph <- function(data_clean, out_path){
 
 #' Create graph of arrival and departure times
 #'
-#' @param data_clean The data to be plotted
+#' @param data The data to be plotted
 #' @param out_path Path to save image
-create_times_graph <- function(data_clean, out_path){
-  times_graph <- data_clean %>% 
+create_times_graph <- function(data, out_path){
+  times_graph <- data %>% 
+    filter(!is.na(time_arrive),
+           !is.na(time_leave)) %>% 
     mutate(time_arrive = as.numeric(time_arrive),
            time_leave = as.numeric(time_leave)) %>%
     pivot_longer(c(time_arrive, time_leave),
@@ -73,9 +75,11 @@ create_times_graph <- function(data_clean, out_path){
 
 #' Create graph of trip length by mode
 #'
-#' @param data_clean The data to be plotted
+#' @param data The data to be plotted
 #' @param out_path Path to save image
-create_dist_mode_graph <- function(data_clean, out_path){
-  dist_mode_graph <- data_clean %>%
-    mutate
+create_dist_mode_graph <- function(data, out_path){
+  # dist_mode_graph <- 
+    data %>%
+    ggplot(aes(x = crow_distance, color = mode))+
+    geom_density(size = 1)
 }
