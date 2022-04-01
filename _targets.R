@@ -1,36 +1,31 @@
 if(!require(pacman)) install.packages("pacman")
 pacman::p_load(targets, tarchetypes, tidyverse)
 
-# This is an example _targets.R file. Every
-# {targets} pipeline needs one.
-# Use tar_script() to create _targets.R and tar_edit()
-# to open it again for editing.
-# Then, run tar_make() to run the pipeline
-# and tar_read(summary) to view the results.
+# Set target-specific options such as packages.
+package_list <- read_lines("package_list.txt")
+tar_option_set(packages = package_list)
 
-# Define custom functions and other global objects.
-# This is where you write source(\"R/functions.R\")
-# if you keep your functions in external scripts.
+# Source script files
 source("R/finding_columns.R")
 source("R/data_cleaning.R")
 source("R/data_visualizations.R")
 
-
-# Set target-specific options such as packages.
-package_list <- read_lines("package_list.txt")
-tar_option_set(packages = package_list)
 
 # Set file paths
 data_file <- "data/poster_data.csv"
 coords_file <- "reference/coords_list.csv"
 questions_file <- "reference/question_names.csv"
 unneeded_cols_file <- "reference/unneeded_cols.txt"
-output_file <- "data/poster_data_CLEANED.csv"
 
-output_plots_dir <- "plots"
 
+# Info for outputs
+output_file <- str_replace(data_file, "\\.csv", "_CLEANED\\.csv")
+output_plots_dir <- "output/plots"
+
+# Misc info
 BYUcoords <- c(longitude = 40.250318845549025,
                latitude = -111.64921975843211)
+
 
 
 #### Targets for cleaning data ####
@@ -69,9 +64,14 @@ clean_data_targets <- tar_plan(
   
 )
 
+#### Targets for analyzing the data ####
+analyze_data_targets <- tar_plan(
+  BYU_coords = BYUcoords
+)
+
 #### Targets for visualizing the data ####
 viz_data_targets <- tar_plan(
-  mode_choice_graph =create_mode_choice_graph(
+  mode_choice_graph = create_mode_choice_graph(
     data_clean, paste0(output_plots_dir,"/mode_choice.png")),
   times_graph = create_times_graph(
     data_clean, paste0(output_plots_dir,"/arr_dept_times.png")),
@@ -87,4 +87,5 @@ viz_data_targets <- tar_plan(
 
 #### Run all targets ####
 tar_plan(clean_data_targets,
+         analyze_data_targets,
          viz_data_targets)
