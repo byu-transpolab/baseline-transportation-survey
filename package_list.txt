@@ -1,0 +1,8 @@
+tidyverse
+magrittr
+lubridate
+ggeasy
+ragg
+wesanderson
+bookdown
+gmapsdistance
