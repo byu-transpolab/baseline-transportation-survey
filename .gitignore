@@ -38,7 +38,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-#bookdown stuff
+# bookdown stuff
 *.aux
 *.log
 *.spl
@@ -46,8 +46,8 @@ _bookdown_files/
 _targets/
 
 
-#misc
+# misc
 *nul
 R/*nul
-#output
-#data
+output
+data
