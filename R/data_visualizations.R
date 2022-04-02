@@ -78,8 +78,22 @@ create_times_graph <- function(data, out_path){
 #' @param data The data to be plotted
 #' @param out_path Path to save image
 create_dist_mode_graph <- function(data, out_path){
-  # dist_mode_graph <- 
-    data %>%
-    ggplot(aes(x = crow_distance, color = mode))+
-    geom_density(size = 1)
+  # dist_mode_graph <-
+    data_final %>%
+    filter(mode_category != "Other") %>%
+    ggplot() +
+    geom_violin(aes(x = crow_distance, y = mode_category, fill = mode_category), scale = "width") +
+    # geom_density(aes(x = crow_distance, color = mode_category), size = 1, trim = T) +
+    scale_x_continuous(limits = c(0, NA), expand = c(0,0)) +
+    theme_minimal() +
+    labs(x = "Crow Distance (mi)",
+         y = element_blank()) +
+    easy_remove_legend(fill)
+  
+  ggsave(out_path, dist_mode_graph,
+         width = 8, height = 4, units = "in",
+         device = ragg::agg_png, scaling = 1,
+         bg = "white")
+  
+  dist_mode_graph
 }

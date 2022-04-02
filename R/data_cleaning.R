@@ -3,11 +3,17 @@
 #' @param data Data object
 #' @param other_cols Vector of "other" column names
 collapse_filter_data <- function(data, other_cols){
-  other_cols_index <- which(colnames(data) %in% other_cols)
-  data_filtered <- data
-  for(i in other_cols_index) data_filtered %<>% replace(i-1, coalesce(data[[i-1]], data[[i]]))
   
-  data_filtered %<>% select(-all_of(other_cols)) %>% 
+  other_cols_index <- which(colnames(data) %in% other_cols)
+  
+  for(i in other_cols_index){
+    data[,i-1] <- ifelse(is.na(data[,i])[,1],
+                         unlist(data[,i-1]),
+                         unlist(data[,i]))
+  }
+  
+  data_filtered <- data %>%
+    select(-all_of(other_cols)) %>% 
     filter(!is.na(mode))
   
   data_filtered

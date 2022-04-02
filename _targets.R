@@ -25,11 +25,11 @@ clean_data_targets <- tar_plan(
   tar_target(coords_path, "reference/coords_list.csv", format = "file"),
   tar_target(questions_path, "reference/question_names.csv", format = "file"),
   tar_target(unneeded_cols_path, "reference/unneeded_cols.txt", format = "file"),
+  tar_target(mode_categories_path, "reference/mode_categories.csv", format = "file"),
   
   
   #### Info for outputs ####
   data_name = str_replace(data_path, "data/(.+)\\.csv", "\\1"),
-  output_cleaned = paste0("output/data/", data_name, "_CLEANED.csv"),
   output_final = paste0("output/data/", data_name, "_FINAL.csv"),
   output_plots_dir = paste0("output/plots/", data_name, "/"),
   
@@ -38,6 +38,7 @@ clean_data_targets <- tar_plan(
   unneeded_col_names = get_unneeded_cols(data_raw, unneeded_cols_path),
   question_names = get_question_names(data_raw, questions_path, unneeded_col_names),
   coords_list = read_csv(coords_path),
+  mode_categories_list = read_csv(mode_categories_path),
   
   data_formatted = format_data(data_raw, question_names, unneeded_col_names),
   
@@ -58,17 +59,16 @@ clean_data_targets <- tar_plan(
   coords = format_coords(data, coords_list),
   times = format_times(data, 18, 8),
   
+  
+  #### Combine data ####
   tables_list = list(zones, ranks, coords, times),
-  bad_columns_list = list(first_act_cols, last_act_cols, rank_cols,
-                          "longitude.x", "longitude.y", "latitude.x", "latitude.y",
-                          "time_arrive", "time_leave"),
+  bad_columns_list = list(
+    first_act_cols, last_act_cols, rank_cols,
+    "longitude.x", "longitude.y", "latitude.x", "latitude.y", #"coord_x", "coord_y",
+    "time_arrive", "time_leave"),
   bad_column_names = get_bad_cols(data, bad_columns_list),
   
-  data_full = combine_data(data, tables_list, bad_column_names),
-  
-  
-  #### Write cleaned data ####
-  data_clean = write_data(data_full, output_cleaned)
+  data_full = combine_data(data, tables_list, bad_column_names)
   
 )
 
@@ -77,13 +77,20 @@ analyze_data_targets <- tar_plan(
   BYU_coords = c(latitude = 40.250318845549025,
                  longitude = -111.64921975843211),
   
-  distance = get_distance(data_clean, BYU_coords),
+  distance = get_distance(data_full, BYU_coords),
+  mode_categories = get_mode_categories(data_full, mode_categories_list),
   
-  analysis_list = list(distance),
-  data_analyzed = combine_data(data_clean, analysis_list),
+  #### Combine data ####
+  analysis_list = list(distance, mode_categories),
+  data_analyzed = combine_data(data_full, analysis_list),
   
-  #### Write analyzed data ####
+  #### Write data ####
   data_final = write_data(data_analyzed, output_final)
+)
+
+#### Targets for summarizing the data ####
+summ_data_targets <- tar_plan(
+  
 )
 
 #### Targets for visualizing the data ####
@@ -96,11 +103,6 @@ viz_data_targets <- tar_plan(
   
   distance_by_mode = create_dist_mode_graph(
     data_final, paste0(output_plots_dir,"/distance_by_mode.png"))
-  
-)
-
-#### Targets for summarizing the data ####
-summ_data_targets <- tar_plan(
   
 )
 
