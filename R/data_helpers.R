@@ -41,6 +41,36 @@ get_question_names <- function(data_raw, questions_path, unneeded_col_names){
 }
 
 
+#' Gets coords list and calculates distance to BYU
+#' 
+#' @param coords_path Path to coords_list file
+#' @param BYU_coords Named (latitude/longitude) vector of BYU coordinates
+get_coords <- function(coords_path, BYU_coords){
+  coords <- read_csv(coords_path)
+  
+  coords_sf <- coords %>% 
+    filter(!is.na(latitude),
+           !is.na(longitude)) %>% 
+    st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+  
+  BYU_sf <- BYU_coords %>% 
+    as_tibble_row() %>% 
+    st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+  
+  distances <- coords_sf %>% 
+    mutate(crow_distance = c(st_distance(geometry, BYU_sf$geometry)) %>% 
+             drop_units() %>% 
+             multiply_by(0.000621371)) %>% #convert to miles 
+    as_tibble() %>% 
+    select(-geometry)
+  
+  coords_list <- coords %>% 
+    left_join(distances, by = "location")
+  
+  coords_list
+}
+
+
 #' Gets bad columns to be removed at the end
 #'
 #' @param data The data to compare column names against

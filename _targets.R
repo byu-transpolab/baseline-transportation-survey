@@ -21,7 +21,7 @@ gmapsdistance::set.api.key(Sys.getenv("GOOGLE_MAPS_API_KEY"))
 #### Targets for cleaning data ####
 clean_data_targets <- tar_plan(
   #### Set paths ####
-  tar_target(data_path, "data/poster_data.csv", format = "file"),
+  tar_target(data_path, "data/survey_data.csv", format = "file"),
   tar_target(coords_path, "reference/coords_list.csv", format = "file"),
   tar_target(questions_path, "reference/question_names.csv", format = "file"),
   tar_target(unneeded_cols_path, "reference/unneeded_cols.txt", format = "file"),
@@ -37,8 +37,9 @@ clean_data_targets <- tar_plan(
   data_raw = read_csv(data_path),
   unneeded_col_names = get_unneeded_cols(data_raw, unneeded_cols_path),
   question_names = get_question_names(data_raw, questions_path, unneeded_col_names),
-  coords_list = read_csv(coords_path),
+  coords_ref = get_coords(coords_path, BYU_coords),
   mode_categories_list = read_csv(mode_categories_path),
+  acceptable_modes = mode_categories_list %>% unlist() %>% unname(),
   
   data_formatted = format_data(data_raw, question_names, unneeded_col_names),
   
@@ -56,7 +57,7 @@ clean_data_targets <- tar_plan(
   
   zones = format_zones(data, first_act_cols, last_act_cols, zone_order),
   ranks = format_rankings(data, rank_cols),
-  coords = format_coords(data, coords_list),
+  coords = format_coords(data, coords_ref),
   times = format_times(data, 18, 8),
   
   
@@ -96,13 +97,13 @@ summ_data_targets <- tar_plan(
 #### Targets for visualizing the data ####
 viz_data_targets <- tar_plan(
   mode_choice_graph = create_mode_choice_graph(
-    data_final, paste0(output_plots_dir,"/mode_choice.png")),
+    data_final, acceptable_modes, paste0(output_plots_dir,"/mode_choice.png")),
   
   times_graph = create_times_graph(
     data_final, paste0(output_plots_dir,"/arr_dept_times.png")),
   
   distance_by_mode = create_dist_mode_graph(
-    data_final, paste0(output_plots_dir,"/distance_by_mode.png"))
+    data_final, coords_ref, paste0(output_plots_dir,"/distance_by_mode.png"))
   
 )
 

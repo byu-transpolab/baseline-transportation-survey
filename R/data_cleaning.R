@@ -7,9 +7,11 @@ collapse_filter_data <- function(data, other_cols){
   other_cols_index <- which(colnames(data) %in% other_cols)
   
   for(i in other_cols_index){
-    data[,i-1] <- ifelse(is.na(data[,i])[,1],
-                         unlist(data[,i-1]),
-                         unlist(data[,i]))
+    data[,i-1] <- ifelse(data[,i-1] %>% 
+                           as_vector() %>%
+                           str_detect("Other"),
+                         unlist(data[,i]),
+                         unlist(data[,i-1]))
   }
   
   data_filtered <- data %>%

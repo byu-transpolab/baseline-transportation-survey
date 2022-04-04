@@ -1,10 +1,13 @@
 #' Create mode choice bar graph
 #' 
 #' @param data The data to be graphed
+#' @param acceptable_modes A vector of modes to be included
 #' @param out_path Path to save image
-create_mode_choice_graph <- function(data, out_path){
+create_mode_choice_graph <- function(data, acceptable_modes, out_path){
   mode_choice_graph <- data %>% 
-    mutate(across(.fns = ~ str_replace(.x," \\(.+\\):?", ""))) %>%
+    mutate(mode = ifelse(mode %in% acceptable_modes,
+                         mode,
+                         "Other")) %>%
     count(mode) %>% 
     mutate(pct = n / nrow(data)
     ) %>% 
@@ -46,7 +49,7 @@ create_times_graph <- function(data, out_path){
                  values_to = "time"
     ) %>% 
     ggplot(aes(x = time, fill = time_type)) +
-    geom_density(alpha = 0.5) +
+    geom_density(aes(y = ..count..), alpha = 0.5, trim = T) +
     scale_x_time(
       labels = function(x){
       str_replace(x, "([0-9]+:[0-9]+):[0-9]+", "\\1")},
@@ -76,23 +79,29 @@ create_times_graph <- function(data, out_path){
 #' Create graph of trip length by mode
 #'
 #' @param data The data to be plotted
+#' @param coords_ref Table of reference coordinates with distances
 #' @param out_path Path to save image
-create_dist_mode_graph <- function(data, out_path){
-  # dist_mode_graph <-
-    data_final %>%
+create_dist_mode_graph <- function(data, coords_ref, out_path){
+  dist_mode_graph <- data %>%
     filter(mode_category != "Other") %>%
     ggplot() +
-    geom_violin(aes(x = crow_distance, y = mode_category, fill = mode_category), scale = "width") +
+    geom_violin(aes(x = crow_distance, y = mode_category), size = 1) +
     # geom_density(aes(x = crow_distance, color = mode_category), size = 1, trim = T) +
-    scale_x_continuous(limits = c(0, NA), expand = c(0,0)) +
+    scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.01))) +
     theme_minimal() +
     labs(x = "Crow Distance (mi)",
          y = element_blank()) +
-    easy_remove_legend(fill)
+    easy_remove_legend(fill) +
+    geom_vline(aes(xintercept = crow_distance, color = location), coords_ref,
+               size = 2) +
+    scale_color_brewer(palette = "Dark2") +
+    easy_move_legend("bottom") +
+    easy_adjust_legend("left") +
+    labs(color = "Points of\nInterest")
   
   ggsave(out_path, dist_mode_graph,
          width = 8, height = 4, units = "in",
-         device = ragg::agg_png, scaling = 1,
+         device = ragg::agg_png, scaling = 0.5,
          bg = "white")
   
   dist_mode_graph
