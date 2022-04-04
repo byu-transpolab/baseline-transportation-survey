@@ -1,0 +1,27 @@
+Introduction {#intro}
+===========================================
+
+This repository serves as a template both in how to write a report, and how
+to do so in RStudio and Bookdown. The parent repository is available as a free
+template at [https://github.com/byu-transpolab/template_bookdown](https://github.com/byu-transpolab/template_bookdown).
+
+The advice in this document comes from numerous sources. Some of it is my own, some
+has been shared by others. Particular note belongs to:
+
+  - Laurie Garrow
+  - Lisa Rosenstein
+  - Kara Kockelman
+  
+The introduction of your report is not simply an "introduction", but rather a 
+**motivation** of why your project matters. What is the cost of not solving 
+this problem? What have been previous attempts to solve this problem? The *why*
+is more important than the *what*. Why is this article worthy of archiving?
+
+A three or four-paragraph structure can work well here.
+
+  1. Identify the problem and why it matters.
+  2. A high-level overview of some previous attempts to solve it, and why those 
+  attempts were limited (this might be two paragraphs).
+  2. Describe the approach (very briefly), and provide an overview of what is 
+  to come. "In this paper we present ..."
+  
