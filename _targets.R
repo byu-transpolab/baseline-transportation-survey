@@ -15,13 +15,20 @@ source("R/data_analysis.R")
 # Setting environment variables
 gmapsdistance::set.api.key(Sys.getenv("GOOGLE_MAPS_API_KEY"))
 
+# Make output directories
+if(!file.exists("output")) dir.create("output")
+if(!file.exists("output/data")) dir.create("output/data")
+if(!file.exists("output/plots")) dir.create("output/plots")
+if(!file.exists("output/tables")) dir.create("output/tables")
+
 
 ################ Targets list ##################################################
 
 #### Targets for cleaning data ####
 clean_data_targets <- tar_plan(
   #### Set paths ####
-  tar_target(data_path, "data/survey_data.csv", format = "file"),
+  # tar_target(data_path, "data/survey_data.csv", format = "file"),
+  tar_target(data_path, "data/test_4_6.csv", format = "file"),
   tar_target(coords_path, "reference/coords_list.csv", format = "file"),
   tar_target(questions_path, "reference/question_names.csv", format = "file"),
   tar_target(unneeded_cols_path, "reference/unneeded_cols.txt", format = "file"),
@@ -32,6 +39,7 @@ clean_data_targets <- tar_plan(
   data_name = str_replace(data_path, "data/(.+)\\.csv", "\\1"),
   output_final = paste0("output/data/", data_name, "_FINAL.csv"),
   output_plots_dir = paste0("output/plots/", data_name, "/"),
+  output_tables_dir = paste0("output/tables/", data_name, "/"),
   
   #### Read data ####
   data_raw = read_csv(data_path),
@@ -65,7 +73,7 @@ clean_data_targets <- tar_plan(
   tables_list = list(zones, ranks, coords, times),
   bad_columns_list = list(
     first_act_cols, last_act_cols, rank_cols,
-    "longitude.x", "longitude.y", "latitude.x", "latitude.y", #"coord_x", "coord_y",
+    "longitude.x", "longitude.y", "latitude.x", "latitude.y", "coord_x", "coord_y",
     "time_arrive", "time_leave"),
   bad_column_names = get_bad_cols(data, bad_columns_list),
   
@@ -96,6 +104,14 @@ summ_data_targets <- tar_plan(
 
 #### Targets for visualizing the data ####
 viz_data_targets <- tar_plan(
+  poi_list = c("Heritage Halls",
+               "Wymount Terrace",
+               "Wyview Park",
+               "Orem",
+               "Springville"),
+  
+  poi = filter(coords_ref, location %in% poi_list),
+  
   mode_choice_graph = create_mode_choice_graph(
     data_final, acceptable_modes, paste0(output_plots_dir,"/mode_choice.png")),
   
@@ -103,7 +119,7 @@ viz_data_targets <- tar_plan(
     data_final, paste0(output_plots_dir,"/arr_dept_times.png")),
   
   distance_by_mode = create_dist_mode_graph(
-    data_final, coords_ref, paste0(output_plots_dir,"/distance_by_mode.png"))
+    data_final, poi, paste0(output_plots_dir,"/distance_by_mode.png"))
   
 )
 

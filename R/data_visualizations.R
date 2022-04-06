@@ -79,13 +79,16 @@ create_times_graph <- function(data, out_path){
 #' Create graph of trip length by mode
 #'
 #' @param data The data to be plotted
-#' @param coords_ref Table of reference coordinates with distances
+#' @param poi Table of reference coordinates with distances of points of interest
 #' @param out_path Path to save image
 create_dist_mode_graph <- function(data, coords_ref, out_path){
   dist_mode_graph <- data %>%
-    filter(mode_category != "Other") %>%
+    # mutate(mode = ifelse(mode_category == "Other",
+    #                      "Other",
+    #                      mode)) %>%
+    filter(!is.na(crow_distance)) %>%
     ggplot() +
-    geom_violin(aes(x = crow_distance, y = mode_category), size = 1) +
+    geom_violin(aes(x = crow_distance, y = mode_category), size = 0.8) +
     # geom_density(aes(x = crow_distance, color = mode_category), size = 1, trim = T) +
     scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.01))) +
     theme_minimal() +
@@ -93,7 +96,7 @@ create_dist_mode_graph <- function(data, coords_ref, out_path){
          y = element_blank()) +
     easy_remove_legend(fill) +
     geom_vline(aes(xintercept = crow_distance, color = location), coords_ref,
-               size = 2) +
+               size = 1) +
     scale_color_brewer(palette = "Dark2") +
     easy_move_legend("bottom") +
     easy_adjust_legend("left") +

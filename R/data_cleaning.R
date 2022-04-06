@@ -114,9 +114,9 @@ format_coords <- function(data, coords_list){
 #' 
 #' @param data Data object
 #' @param arrive_before The hour (24h) which all respondents should arrive before.
-#' If a respondent puts a time after this, we assume an AM/PM error.
+#' If a respondent puts a time equal to or after this, we assume an AM/PM error.
 #' @param depart_after The hour (24h) which all respondents should depart after.
-#' If a respondent puts a time before this, we assume an AM/PM error.
+#' If a respondent puts a time equal to or before this, we assume an AM/PM error.
 format_times <- function(data, arrive_before, depart_after){
   times <- data %>% 
     filter(!is.na(time_arrive),
