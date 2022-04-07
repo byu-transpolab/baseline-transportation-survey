@@ -16,12 +16,11 @@ create_mode_choice_graph <- function(data, acceptable_modes, out_path){
                          fill = reorder(mode, -n))) +
     theme_minimal() +
     geom_bar(stat = "identity") +
-    geom_text(aes(label = paste0(round(pct*100), "%")), nudge_y = 0.02) +
+    geom_text(aes(label = paste0(round(pct*100, 1), "%")), nudge_y = 0.02) +
     labs(x = element_blank(),
          y = element_blank(),
          fill = "Mode") +
-    theme(panel.grid = element_blank(),
-          legend.position = c(.7,.6)) +
+    theme(panel.grid = element_blank()) +
     easy_remove_axes() +
     scale_fill_brewer(palette = "Paired")
   
@@ -88,7 +87,8 @@ create_dist_mode_graph <- function(data, coords_ref, out_path){
     #                      mode)) %>%
     filter(!is.na(crow_distance)) %>%
     ggplot() +
-    geom_violin(aes(x = crow_distance, y = mode_category), size = 0.8) +
+    geom_violin(aes(x = crow_distance, y = mode_category),
+                size = 0.8, scale = "area") +
     # geom_density(aes(x = crow_distance, color = mode_category), size = 1, trim = T) +
     scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.01))) +
     theme_minimal() +

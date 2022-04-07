@@ -105,12 +105,12 @@ summ_data_targets <- tar_plan(
 #### Targets for visualizing the data ####
 viz_data_targets <- tar_plan(
   poi_list = c("Heritage Halls",
-               "Wymount Terrace",
+               # "Wymount Terrace",
                "Wyview Park",
                "Orem",
                "Springville"),
   
-  poi = filter(coords_ref, location %in% poi_list),
+  poi = get_poi(coords_ref, poi_list),
   
   mode_choice_graph = create_mode_choice_graph(
     data_final, acceptable_modes, paste0(output_plots_dir,"/mode_choice.png")),

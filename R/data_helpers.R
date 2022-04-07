@@ -85,6 +85,23 @@ get_bad_cols <- function(data, bad_columns_list){
 }
 
 
+#' Gets Points of Interest from coordinate reference file and makes location
+#' a factor based on distance
+#' 
+#' @param coords_ref Coordinate reference file
+#' @param poi_list Character vector of locations to include
+get_poi <- function(coords_ref, poi_list){
+  poi <- coords_ref %>% 
+    filter(location %in% poi_list)
+  
+  poi$location <- poi$location %>% 
+    factor() %>% 
+    reorder(poi$crow_distance)
+  
+  poi
+}
+
+
 #' Combine data
 #' 
 #' @param data The original data
