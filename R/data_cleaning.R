@@ -135,3 +135,19 @@ format_times <- function(data, arrive_before, depart_after){
   
   times
 }
+
+
+#' Reformat dates/times
+#' 
+#' @param data Data object
+reformat_dates <- function(data){
+  dates <- data %>% 
+    select(ID, date) %>% 
+    mutate(
+      datetime = parse_date_time(date, "ymd HMS", tz = "US/Mountain"),
+      date = date(datetime),
+      time = as_hms(datetime)) %>% 
+    select(-datetime)
+  
+  dates
+}
