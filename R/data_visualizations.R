@@ -90,17 +90,16 @@ create_dist_mode_graph <- function(data, poi, out_path){
     geom_violin(aes(x = crow_distance, y = mode_category),
                 size = 0.8, scale = "area") +
     # geom_density(aes(x = crow_distance, color = mode_category), size = 1, trim = T) +
-    scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.01))) +
+    scale_x_continuous(limits = c(0, 7), expand = expansion(mult = c(0, 0.01))) +
     theme_minimal() +
-    labs(x = "Crow Distance (mi)",
+    labs(x = "Crow-Fly Distance (mi)",
          y = element_blank()) +
     easy_remove_legend(fill) +
     geom_vline(aes(xintercept = crow_distance, color = location), poi,
                size = 1) +
     scale_color_brewer(palette = "Dark2") +
     easy_move_legend("bottom") +
-    easy_adjust_legend("left") +
-    labs(color = "Points of\nInterest")
+    labs(color = "Points of Interest:")
   
   ggsave(out_path, dist_mode_graph,
          width = 8, height = 4, units = "in",

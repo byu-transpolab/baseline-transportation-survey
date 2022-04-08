@@ -16,7 +16,11 @@ collapse_filter_data <- function(data, other_cols){
   
   data_filtered <- data %>%
     select(-all_of(other_cols)) %>% 
-    filter(!is.na(mode))
+    filter(!is.na(mode)) %>%
+    mutate(city = case_when(city == "PG" ~ "Pleasant Grove",
+                            city == "SLC" ~ "Salt Lake City",
+                            T ~ city),
+           city = str_to_title(city))
   
   data_filtered
 }
@@ -97,7 +101,7 @@ format_coords <- function(data, coords_list){
   coord_latitude <- 40.2824881-(as.numeric(data$coord_y)*0.0000184697272727293)
   
   #return lats/longs based on above and predetermined values (coordslist)
-  coords <- data %>%
+  coords <- data %>% 
     mutate(longitude = coord_longitude, latitude = coord_latitude) %>%
     left_join(coords_list, by = c("complex" = "location")) %>%
     left_join(coords_list, by = c("city" = "location")) %>%
