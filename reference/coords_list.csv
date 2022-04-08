@@ -1,8 +1,28 @@
-location,longitude,latitude
-Heritage Halls,-111.64417,40.24991
-Helaman Halls,-111.65426,40.2531
-Foreign Language Student Residence (FLSR),-111.63851,40.26329
-Wyview Park,-111.66039,40.26054
-Wymount Terrace,-111.6414,40.25899
-Orem,-111.69352,40.29717
-Springville,-111.61066,40.16525
+location,latitude,longitude
+Alpine,40.456389,-111.773611
+Clearfield,41.106389,-112.024167
+Draper,40.514722,-111.873056
+Eagle Mountain,40.306111,-112.009722
+Elk Ridge,40.015556,-111.681944
+Foreign Language Student Residence (FLSR),40.26329,-111.63851
+Helaman Halls,40.2531,-111.65426
+Heritage Halls,40.24991,-111.64417
+Herriamn,40.506667,-112.030833
+Highland,40.418889,-111.792222
+Lehi,40.387778,-111.849167
+Lindon,40.338611,-111.716111
+Midway,40.514444,-111.477222
+North Ogden,41.31,-111.958889
+Orem,40.29717,-111.69352
+Pleasant Grove,40.370278,-111.731389
+Riverton,40.520556,-111.955278
+Salem,40.050556,-111.6725
+Salt Lake City,40.760833,-111.891111
+Sandy,40.5725,-111.859722
+Saratoga Springs,40.328889,-111.903056
+South Jordan,40.561667,-111.960833
+Spanish Fork,40.115,-111.655
+Springville,40.16525,-111.61066
+Vineyard,40.303889,-111.757778
+Wymount Terrace,40.25899,-111.6414
+Wyview Park,40.26054,-111.66039
