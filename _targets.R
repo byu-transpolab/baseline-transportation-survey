@@ -28,11 +28,12 @@ if(!file.exists("output/tables")) dir.create("output/tables")
 clean_data_targets <- tar_plan(
   #### Set paths ####
   # tar_target(data_path, "data/survey_data.csv", format = "file"),
-  tar_target(data_path, "data/test_4_6.csv", format = "file"),
+  tar_target(data_path, "data/test_data_4_7.csv", format = "file"),
   tar_target(coords_path, "reference/coords_list.csv", format = "file"),
   tar_target(questions_path, "reference/question_names.csv", format = "file"),
   tar_target(unneeded_cols_path, "reference/unneeded_cols.txt", format = "file"),
   tar_target(mode_categories_path, "reference/mode_categories.csv", format = "file"),
+  tar_target(weather_path, "reference/NOAA_daily_summaries.csv", format = "file"),
   
   
   #### Info for outputs ####
@@ -48,6 +49,7 @@ clean_data_targets <- tar_plan(
   coords_ref = get_coords(coords_path, BYU_coords),
   mode_categories_list = read_csv(mode_categories_path),
   acceptable_modes = mode_categories_list %>% unlist() %>% unname(),
+  weather_info = read_csv(weather_path),
   
   data_formatted = format_data(data_raw, question_names, unneeded_col_names),
   
@@ -67,14 +69,15 @@ clean_data_targets <- tar_plan(
   ranks = format_rankings(data, rank_cols),
   coords = format_coords(data, coords_ref),
   times = format_times(data, 18, 8),
+  dates = reformat_dates(data),
   
   
   #### Combine data ####
-  tables_list = list(zones, ranks, coords, times),
+  tables_list = list(zones, ranks, coords, times, dates),
   bad_columns_list = list(
     first_act_cols, last_act_cols, rank_cols,
     "longitude.x", "longitude.y", "latitude.x", "latitude.y", "coord_x", "coord_y",
-    "time_arrive", "time_leave"),
+    "time_arrive", "time_leave", "date"),
   bad_column_names = get_bad_cols(data, bad_columns_list),
   
   data_full = combine_data(data, tables_list, bad_column_names)
@@ -88,9 +91,10 @@ analyze_data_targets <- tar_plan(
   
   distance = get_distance(data_full, BYU_coords),
   mode_categories = get_mode_categories(data_full, mode_categories_list),
+  weather = get_weather(data_full, weather_info, station = "USC00427064"),
   
   #### Combine data ####
-  analysis_list = list(distance, mode_categories),
+  analysis_list = list(distance, mode_categories, weather),
   data_analyzed = combine_data(data_full, analysis_list),
   
   #### Write data ####
@@ -119,7 +123,17 @@ viz_data_targets <- tar_plan(
     data_final, paste0(output_plots_dir,"/arr_dept_times.png")),
   
   distance_by_mode = create_dist_mode_graph(
-    data_final, poi, paste0(output_plots_dir,"/distance_by_mode.png"))
+    data_final, poi, paste0(output_plots_dir,"/distance_by_mode.png")),
+  
+  temperature_breaks = c(0, 50, 60, 1000),
+  temperature_labels = c(paste0("< 50\U00B0","F"),
+                         paste0("50\U2013","60\U00B0","F"),
+                         paste0("> 60\U00B0","F")),
+  
+  weather_mode = mode_choice_by_weather(
+    data_final, temperature_breaks, temperature_labels,
+    paste0(output_plots_dir,"/mode_by_weather.png")
+  )
   
 )
 
