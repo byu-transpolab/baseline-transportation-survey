@@ -28,7 +28,7 @@ if(!file.exists("output/tables")) dir.create("output/tables")
 clean_data_targets <- tar_plan(
   #### Set paths ####
   # tar_target(data_path, "data/survey_data.csv", format = "file"),
-  tar_target(data_path, "data/test_4_6.csv", format = "file"),
+  tar_target(data_path, "data/survey_data_4_8.csv", format = "file"),
   tar_target(coords_path, "reference/coords_list.csv", format = "file"),
   tar_target(questions_path, "reference/question_names.csv", format = "file"),
   tar_target(unneeded_cols_path, "reference/unneeded_cols.txt", format = "file"),
