@@ -9,14 +9,14 @@ create_mode_choice_graph <- function(data, acceptable_modes, out_path){
                          mode,
                          "Other")) %>%
     count(mode) %>% 
-    mutate(pct = n / nrow(data)
-    ) %>% 
-    ggplot(mapping = aes(x = reorder(mode, -n),
-                         y = pct,
-                         fill = reorder(mode, -n))) +
+    mutate(pct = n / sum(n)) %>% 
+    ggplot(aes(x = reorder(mode, -n),
+               y = pct,
+               fill = reorder(mode, -n))) +
     theme_minimal() +
     geom_bar(stat = "identity") +
-    geom_text(aes(label = paste0(round(pct*100, 1), "%")), nudge_y = 0.02) +
+    geom_text(aes(label = paste0(round(pct*100, 1), "%")),
+              nudge_y = 0.02) +
     labs(x = element_blank(),
          y = element_blank(),
          fill = "Mode") +
@@ -48,7 +48,7 @@ create_times_graph <- function(data, out_path){
                  values_to = "time_value"
     ) %>% 
     ggplot(aes(x = time_value, fill = time_type)) +
-    geom_density(aes(y = ..count..), alpha = 0.5, trim = T) +
+    geom_density(aes(y = stat(count)), alpha = 0.5, trim = T) +
     scale_x_time(
       labels = function(x){
       str_replace(x, "([0-9]+:[0-9]+):[0-9]+", "\\1")},
@@ -118,24 +118,24 @@ create_dist_mode_graph <- function(data, poi, out_path){
 #' @param out_path output path
 mode_choice_by_weather <- function(data, breaks, labels, out_path){
   weather_modes <- data %>%
-    filter(!is.na(TAVG1),
+    filter(!is.na(TMAX),
            mode_category != "Other") %>% 
-    mutate(TAVG2 = cut(TAVG1, breaks, labels, ordered_result = T),
+    mutate(TMAX_binned = cut(TMAX, breaks, labels, ordered_result = T),
            # mode_category = case_when(
            #   mode_category %in% c("Walk", "Bike") ~ "Outside",
            #   T ~ "Inside"
            # )
            ) %>% 
-    group_by(TAVG2, mode_category) %>% 
+    group_by(TMAX_binned, mode_category) %>%
     summarize(n = n()) %>% 
     mutate(pct = n/sum(n),
            n_obs = sum(n)) %>% 
-    ggplot(aes(x = TAVG2, shape = mode_category, y = pct)) +
+    ggplot(aes(x = TMAX_binned, shape = mode_category, y = pct)) +
     geom_point() +
-    geom_text(aes(x = TAVG2, y = 0, label = paste("n =", n_obs))) +
+    geom_text(aes(x = TMAX_binned, y = 0, label = paste("n =", n_obs))) +
     theme_minimal() +
-    theme(panel.grid = element_line(colour = "grey70", size = 0.2)) +
-    labs(x = "Average Temperature",
+    theme(panel.grid = element_line(color = "grey70", size = 0.2)) +
+    labs(x = "Maximum Daily Temperature",
          y = "Mode Share", 
          shape = "Mode")
   

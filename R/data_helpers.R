@@ -5,7 +5,7 @@
 #' @param unneeded_col_names Vector of column names that are extraneous
 format_data <- function(data_raw, question_names, unneeded_col_names){
   data <- data_raw %>% 
-    select(-all_of(unneeded_col_names)) %>% 
+    select(-any_of(unneeded_col_names)) %>% 
     rename_with(~ question_names$new_name, all_of(question_names$old_name)) %>% 
     {.[-(1:2),]} %>% #remove the first two rows due to their unhelpfulness
     relocate(ID)
@@ -79,7 +79,6 @@ get_bad_cols <- function(data, bad_columns_list){
   bad_column_names <- bad_columns_list %>%
     unlist() %>% 
     unname()
-  bad_column_names %<>% {.[bad_column_names %in% colnames(data)]}
   
   bad_column_names
 }
@@ -108,9 +107,10 @@ get_poi <- function(coords_ref, poi_list){
 #' @param tables_list A list of table objects containing the data to join
 #' @param bad_column_names A character vector of column names to remove
 combine_data <- function(data, tables_list, bad_column_names = NULL){
+  
   #remove old (bad) columns
   data_full <- data %>% 
-    select(-all_of(bad_column_names))
+    select(-any_of(bad_column_names))
   
   #join new tables
   for(i in tables_list){

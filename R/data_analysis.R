@@ -68,11 +68,11 @@ get_weather <- function(data, weather_info, station){
   weather_info_filtered <- weather_info %>% 
     filter(STATION == station) %>% 
     select(DATE, PRCP, SNOW, TMAX, TMIN) %>% 
-    mutate(TAVG1 = (TMAX + TMIN) / 2)
+    mutate(Tnorm = (TMAX + TMIN) / 2)
   
   weather <- data %>% 
-    select(ID, date) %>% 
-    left_join(weather_info_filtered, by = c("date" = "DATE"))
+    left_join(weather_info_filtered, by = c("date" = "DATE")) %>% 
+    select(ID, PRCP:Tnorm)
   
   weather
 }

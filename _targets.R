@@ -11,6 +11,7 @@ source("R/finding_columns.R")
 source("R/data_cleaning.R")
 source("R/data_visualizations.R")
 source("R/data_analysis.R")
+source("R/demographic_visualizations.R")
 
 # Setting environment variables
 gmapsdistance::set.api.key(Sys.getenv("GOOGLE_MAPS_API_KEY"))
@@ -125,15 +126,19 @@ viz_data_targets <- tar_plan(
   distance_by_mode = create_dist_mode_graph(
     data_final, poi, paste0(output_plots_dir,"/distance_by_mode.png")),
   
-  temperature_breaks = c(0, 50, 60, 1000),
+  temperature_breaks = c(-1000, 50, 60, 65, 1000),
   temperature_labels = c(paste0("< 50\U00B0","F"),
                          paste0("50\U2013","60\U00B0","F"),
-                         paste0("> 60\U00B0","F")),
+                         paste0("60\U2013","65\U00B0","F"),
+                         paste0("> 65\U00B0","F")),
   
-  weather_mode = mode_choice_by_weather(
+  weather_mode_plot = mode_choice_by_weather(
     data_final, temperature_breaks, temperature_labels,
     paste0(output_plots_dir,"/mode_by_weather.png")
-  )
+  ),
+  
+  gender_plot = plot_gender_dist(
+    data_final, paste0(output_plots_dir,"/gender_distribution.png"))
   
 )
 

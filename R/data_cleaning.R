@@ -9,7 +9,8 @@ collapse_filter_data <- function(data, other_cols){
   for(i in other_cols_index){
     data[,i-1] <- ifelse(data[,i-1] %>% 
                            as_vector() %>%
-                           str_detect("Other"),
+                           {str_detect(., "Other") |
+                               str_detect(., "self-describe")},
                          unlist(data[,i]),
                          unlist(data[,i-1]))
   }
