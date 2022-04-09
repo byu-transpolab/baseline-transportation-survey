@@ -28,8 +28,7 @@ if(!file.exists("output/tables")) dir.create("output/tables")
 #### Targets for cleaning data ####
 clean_data_targets <- tar_plan(
   #### Set paths ####
-  # tar_target(data_path, "data/survey_data.csv", format = "file"),
-  tar_target(data_path, "data/test_data_4_7.csv", format = "file"),
+  tar_target(data_path, "data/survey_data.csv", format = "file"),
   tar_target(coords_path, "reference/coords_list.csv", format = "file"),
   tar_target(questions_path, "reference/question_names.csv", format = "file"),
   tar_target(unneeded_cols_path, "reference/unneeded_cols.txt", format = "file"),
@@ -138,7 +137,10 @@ viz_data_targets <- tar_plan(
   ),
   
   gender_plot = plot_gender_dist(
-    data_final, paste0(output_plots_dir,"/gender_distribution.png"))
+    data_final, paste0(output_plots_dir,"/gender_distribution.png")),
+  
+  college_plot = plot_college_dist(
+    data_final, paste0(output_plots_dir,"/college_distribution.png"))
   
 )
 

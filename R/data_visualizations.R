@@ -85,7 +85,8 @@ create_dist_mode_graph <- function(data, poi, out_path){
     # mutate(mode = ifelse(mode_category == "Other",
     #                      "Other",
     #                      mode)) %>%
-    filter(!is.na(crow_distance)) %>%
+    filter(!is.na(crow_distance),
+           mode_category != "Other") %>%
     ggplot() +
     geom_violin(aes(x = crow_distance, y = mode_category),
                 size = 0.8, scale = "area") +
