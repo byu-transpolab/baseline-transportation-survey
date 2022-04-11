@@ -57,3 +57,22 @@ get_mode_categories <- function(data, categories){
   
   mode_categories
 }
+
+
+#' Gets weather data
+#' 
+#' @param data Data object
+#' @param weather_info NOAA weather info (daily summaries) as .csv
+#' @param station Weather station ID
+get_weather <- function(data, weather_info, station){
+  weather_info_filtered <- weather_info %>% 
+    filter(STATION == station) %>% 
+    select(DATE, PRCP, SNOW, TMAX, TMIN) %>% 
+    mutate(Tnorm = (TMAX + TMIN) / 2)
+  
+  weather <- data %>% 
+    left_join(weather_info_filtered, by = c("date" = "DATE")) %>% 
+    select(ID, PRCP:Tnorm)
+  
+  weather
+}

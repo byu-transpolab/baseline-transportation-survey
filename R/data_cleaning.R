@@ -9,14 +9,19 @@ collapse_filter_data <- function(data, other_cols){
   for(i in other_cols_index){
     data[,i-1] <- ifelse(data[,i-1] %>% 
                            as_vector() %>%
-                           str_detect("Other"),
+                           {str_detect(., "Other") |
+                               str_detect(., "self-describe")},
                          unlist(data[,i]),
                          unlist(data[,i-1]))
   }
   
   data_filtered <- data %>%
     select(-all_of(other_cols)) %>% 
-    filter(!is.na(mode))
+    filter(!is.na(mode)) %>%
+    mutate(city = case_when(city == "PG" ~ "Pleasant Grove",
+                            city == "SLC" ~ "Salt Lake City",
+                            T ~ city),
+           city = str_to_title(city))
   
   data_filtered
 }
@@ -97,7 +102,7 @@ format_coords <- function(data, coords_list){
   coord_latitude <- 40.2824881-(as.numeric(data$coord_y)*0.0000184697272727293)
   
   #return lats/longs based on above and predetermined values (coordslist)
-  coords <- data %>%
+  coords <- data %>% 
     mutate(longitude = coord_longitude, latitude = coord_latitude) %>%
     left_join(coords_list, by = c("complex" = "location")) %>%
     left_join(coords_list, by = c("city" = "location")) %>%
@@ -134,4 +139,20 @@ format_times <- function(data, arrive_before, depart_after){
     select(ID, time_arrive, time_leave)
   
   times
+}
+
+
+#' Reformat dates/times
+#' 
+#' @param data Data object
+reformat_dates <- function(data){
+  dates <- data %>% 
+    select(ID, date) %>% 
+    mutate(
+      datetime = parse_date_time(date, "ymd HMS", tz = "US/Mountain"),
+      date = date(datetime),
+      time = as_hms(datetime)) %>% 
+    select(-datetime)
+  
+  dates
 }
