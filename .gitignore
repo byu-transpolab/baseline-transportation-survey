@@ -52,3 +52,5 @@ R/*nul
 output
 data
 docs
+
+*.DS_store
